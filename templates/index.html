@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Health Prediction Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{
+      --bg:#f5faff; --card:#fff; --primary:#0066ff; --muted:#6b7280;
+      --success:#2ecc71; --danger:#e67e22; --radius:14px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;font-family:"Inter",sans-serif;background:linear-gradient(180deg,#e9f2ff,#f9fbff);
+      color:#111827;display:flex;justify-content:center;padding:28px;
+    }
+    .wrapper{width:100%;max-width:1000px}
+    .card{background:var(--card);border-radius:var(--radius);box-shadow:0 6px 24px rgba(0,0,0,0.07);padding:22px;}
+    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+    .logo{background:var(--primary);color:#fff;border-radius:10px;padding:10px 14px;font-weight:700;font-size:20px;}
+    h1{margin:0;font-size:22px;}
+    p.lead{margin:0;color:var(--muted);font-size:13px;}
+    .layout{display:grid;grid-template-columns:1fr 380px;gap:18px;}
+    .panel,.visual{border-radius:var(--radius);background:#fafcff;border:1px solid #edf0f5;padding:14px;}
+    .btn{border:1px solid #d0d7ff;background:#fff;color:var(--primary);padding:8px 12px;border-radius:10px;font-weight:600;cursor:pointer;}
+    .btn.active{background:var(--primary);color:#fff;}
+    .inputs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;}
+    .field{display:flex;flex-direction:column;gap:4px;}
+    label{font-size:13px;font-weight:600;}
+    input[type="number"]{padding:9px 10px;border-radius:8px;border:1px solid #dce3f0;font-size:14px;}
+    .hint{font-size:12px;color:var(--muted);}
+    .submitRow{margin-top:12px;display:flex;gap:8px;}
+    .primary{background:var(--primary);color:#fff;border:none;padding:10px 16px;border-radius:10px;cursor:pointer;font-weight:700;}
+    .visual{display:flex;flex-direction:column;align-items:center;gap:8px;}
+    .chartWrap{width:100%;max-width:300px;height:300px;}
+    .statusBadge{font-weight:700;padding:6px 12px;border-radius:999px;}
+    .statusHealthy{background:#e7f9ef;color:var(--success);}
+    .statusRisk{background:#fff4e5;color:var(--danger);}
+    footer{text-align:center;margin-top:10px;color:var(--muted);font-size:12px;}
+    @media(max-width:920px){.layout{grid-template-columns:1fr}.inputs{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="card">
+    <header>
+      <div><div class="logo">HP</div></div>
+      <div><h1>Health Prediction Portal</h1><p class="lead">Doctor-grade realistic ranges • Smart visualization</p></div>
+    </header>
+
+    <div class="layout">
+      <div class="panel">
+        <h3>Select Disease Type</h3>
+        <div class="controls">
+          <button id="btn-diabetes" class="btn" onclick="select('diabetes')">Diabetes</button>
+          <button id="btn-heart" class="btn" onclick="select('heart')">Heart Disease</button>
+        </div>
+        <div id="inputsContainer"><p style="color:var(--muted);">Choose a dataset to begin.</p></div>
+        <div class="submitRow">
+          <button class="primary" onclick="predict()">Predict</button>
+          <button class="btn" onclick="fillExample()">Example</button>
+          <button class="btn" onclick="clearInputs()">Clear</button>
+        </div>
+      </div>
+
+      <div class="visual">
+        <h4>Risk Visualization</h4>
+        <div class="chartWrap"><canvas id="doughnut"></canvas></div>
+        <div id="probText" style="font-weight:700;">Risk Probability: —</div>
+        <div id="statusBox"></div>
+      </div>
+    </div>
+
+    <footer>Realistic input limits used per WHO & clinical guidelines.</footer>
+  </div>
+</div>
+
+<script>
+const presets={
+  diabetes:{
+    placeholders:[
+      {key:"Pregnancies",min:0,max:17,step:1,sample:2,hint:"Number of times pregnant"},
+      {key:"Glucose (mg/dL)",min:70,max:180,step:1,sample:120,hint:"Normal fasting 70–99"},
+      {key:"BloodPressure (mm Hg)",min:60,max:140,step:1,sample:80,hint:"Normal 80–120"},
+      {key:"SkinThickness (mm)",min:7,max:50,step:1,sample:25,hint:"Typical 10–40"},
+      {key:"Insulin (µU/mL)",min:15,max:276,step:1,sample:80,hint:"Normal 15–276"},
+      {key:"BMI (kg/m²)",min:15,max:50,step:0.1,sample:28,hint:"Healthy 18.5–24.9"},
+      {key:"DiabetesPedigreeFunction",min:0.05,max:2.5,step:0.01,sample:0.5,hint:"Higher = genetic risk"},
+      {key:"Age (years)",min:18,max:90,step:1,sample:45,hint:"Adult range 18–90"}
+    ]
+  },
+  heart:{
+    placeholders:[
+      {key:"Age (years)",min:20,max:90,step:1,sample:54,hint:"Adult range"},
+      {key:"RestingBP (mm Hg)",min:80,max:200,step:1,sample:130,hint:"Normal ~120"},
+      {key:"Cholesterol (mg/dL)",min:100,max:400,step:1,sample:240,hint:"Desirable <200"},
+      {key:"MaxHR (bpm)",min:60,max:210,step:1,sample:160,hint:"Max heart rate"},
+      {key:"Oldpeak (mm)",min:0,max:6,step:0.1,sample:1.2,hint:"ST depression"},
+      {key:"Sex (0=F,1=M)",min:0,max:1,step:1,sample:1,hint:"0 Female, 1 Male"},
+      {key:"ChestPainType (0–3)",min:0,max:3,step:1,sample:1,hint:"Encoded chest pain"},
+      {key:"FastingBS (0/1)",min:0,max:1,step:1,sample:0,hint:">120 mg/dL=1"},
+      {key:"ExerciseAngina (0/1)",min:0,max:1,step:1,sample:0,hint:"0 No, 1 Yes"},
+      {key:"ST_Slope (0–2)",min:0,max:2,step:1,sample:1,hint:"Slope type"}
+    ]
+  }
+};
+
+let selected=null,chart=null;
+
+function select(name){
+  selected=name;
+  document.getElementById("btn-diabetes").classList.toggle("active",name==="diabetes");
+  document.getElementById("btn-heart").classList.toggle("active",name==="heart");
+  const cont=document.getElementById("inputsContainer");
+  cont.innerHTML="";
+  const grid=document.createElement("div");
+  grid.className="inputs";
+  presets[name].placeholders.forEach((p,i)=>{
+    const fld=document.createElement("div");
+    fld.className="field";
+    fld.innerHTML=`<label for="f${i}">${p.key}</label>
+      <input id="f${i}" type="number" min="${p.min}" max="${p.max}" step="${p.step}" placeholder="${p.sample}">
+      <div class="hint">${p.hint} • Range ${p.min}–${p.max}</div>`;
+    grid.appendChild(fld);
+  });
+  cont.appendChild(grid);
+}
+
+function fillExample(){
+  if(!selected)return alert("Select a dataset first.");
+  presets[selected].placeholders.forEach((p,i)=>document.getElementById("f"+i).value=p.sample);
+}
+function clearInputs(){
+  if(!selected)return;
+  presets[selected].placeholders.forEach((p,i)=>document.getElementById("f"+i).value="");
+  updateChart(0);document.getElementById("probText").textContent="Risk Probability: —";
+  document.getElementById("statusBox").innerHTML="";
+}
+
+function readInputs(){
+  if(!selected)return null;
+  const arr=[];
+  for(let i=0;i<presets[selected].placeholders.length;i++){
+    const el=document.getElementById("f"+i);
+    if(!el.value)return null;
+    arr.push(parseFloat(el.value));
+  }
+  return arr;
+}
+
+async function predict(){
+  const features=readInputs();
+  if(!features)return alert("Fill all inputs first.");
+  const res=await fetch("/predict",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({disease:selected,features})});
+  const j=await res.json();
+  const prob=j.probability||0;const label=j.label||0;const status=j.status||"";
+  document.getElementById("probText").textContent=`Risk Probability: ${(prob*100).toFixed(1)}%`;
+  document.getElementById("statusBox").innerHTML=`<span class="statusBadge ${label==0?'statusHealthy':'statusRisk'}">${status}</span>`;
+  updateChart(prob);
+}
+
+function updateChart(prob){
+  const data=[1-prob,prob];
+  if(chart){chart.data.datasets[0].data=data;chart.update();}
+  else{
+    chart=new Chart(document.getElementById("doughnut"),{
+      type:"doughnut",
+      data:{labels:["Healthy","At Risk"],datasets:[{data:data,backgroundColor:["#2ecc71","#e67e22"]}]},
+      options:{plugins:{legend:{position:"bottom"}}}
+    });
+  }
+}
+updateChart(0);
+</script>
+</body>
+</html>

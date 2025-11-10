@@ -1,0 +1,9 @@
+dataset,model,auc
+diab,logistic,0.8127777777777777
+diab,svm,0.7964814814814815
+diab,decision_tree,0.6357407407407407
+diab,naive_bayes,0.7646296296296297
+heart,logistic,0.9297142857142857
+heart,svm,0.9771428571428571
+heart,decision_tree,0.9857142857142858
+heart,naive_bayes,0.9042857142857142
