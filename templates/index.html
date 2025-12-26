@@ -1,179 +1,276 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Health Prediction Portal</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HealthAI Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <style>
-    :root{
-      --bg:#f5faff; --card:#fff; --primary:#0066ff; --muted:#6b7280;
-      --success:#2ecc71; --danger:#e67e22; --radius:14px;
-    }
     *{box-sizing:border-box}
-    body{
-      margin:0;font-family:"Inter",sans-serif;background:linear-gradient(180deg,#e9f2ff,#f9fbff);
-      color:#111827;display:flex;justify-content:center;padding:28px;
-    }
-    .wrapper{width:100%;max-width:1000px}
-    .card{background:var(--card);border-radius:var(--radius);box-shadow:0 6px 24px rgba(0,0,0,0.07);padding:22px;}
-    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
-    .logo{background:var(--primary);color:#fff;border-radius:10px;padding:10px 14px;font-weight:700;font-size:20px;}
-    h1{margin:0;font-size:22px;}
-    p.lead{margin:0;color:var(--muted);font-size:13px;}
-    .layout{display:grid;grid-template-columns:1fr 380px;gap:18px;}
-    .panel,.visual{border-radius:var(--radius);background:#fafcff;border:1px solid #edf0f5;padding:14px;}
-    .btn{border:1px solid #d0d7ff;background:#fff;color:var(--primary);padding:8px 12px;border-radius:10px;font-weight:600;cursor:pointer;}
-    .btn.active{background:var(--primary);color:#fff;}
-    .inputs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;}
-    .field{display:flex;flex-direction:column;gap:4px;}
-    label{font-size:13px;font-weight:600;}
-    input[type="number"]{padding:9px 10px;border-radius:8px;border:1px solid #dce3f0;font-size:14px;}
-    .hint{font-size:12px;color:var(--muted);}
-    .submitRow{margin-top:12px;display:flex;gap:8px;}
-    .primary{background:var(--primary);color:#fff;border:none;padding:10px 16px;border-radius:10px;cursor:pointer;font-weight:700;}
-    .visual{display:flex;flex-direction:column;align-items:center;gap:8px;}
-    .chartWrap{width:100%;max-width:300px;height:300px;}
-    .statusBadge{font-weight:700;padding:6px 12px;border-radius:999px;}
-    .statusHealthy{background:#e7f9ef;color:var(--success);}
-    .statusRisk{background:#fff4e5;color:var(--danger);}
-    footer{text-align:center;margin-top:10px;color:var(--muted);font-size:12px;}
-    @media(max-width:920px){.layout{grid-template-columns:1fr}.inputs{grid-template-columns:1fr}}
+    body{margin:0;font-family:'Poppins',sans-serif;background:#020b1f;color:#d8e2ff}
+
+    /* NAVBAR */
+    nav{width:100%;padding:18px 40px;display:flex;justify-content:space-between;align-items:center;background:#040f2e;position:sticky;top:0;z-index:999;box-shadow:0 0 25px rgba(0,180,255,0.35)}
+    .logo{color:#47c3ff;font-size:22px;font-weight:700;text-shadow:0 0 8px #00c8ff}
+    nav ul{display:flex;list-style:none;gap:30px;margin:0;padding:0}
+    nav a{color:#d8e2ff;text-decoration:none;font-weight:600}
+    nav a:hover{color:#47c3ff;text-shadow:0 0 6px #00c8ff}
+
+    /* HERO */
+    .hero{padding:80px 40px;text-align:center;background:radial-gradient(circle at top,#061a3a,#020b1f)}
+    .hero h1{color:#47c3ff;font-size:40px;text-shadow:0 0 12px #00c8ff;margin:0}
+    .hero p{color:#9db4d9;font-size:18px;max-width:700px;margin:10px auto}
+
+    /* MAIN CONTENT */
+    .main{width:90%;max-width:1100px;margin:40px auto}
+    .card{background:#061a3a;padding:25px;border-radius:20px;box-shadow:0 0 25px rgba(0,180,255,0.18);border:1px solid rgba(0,180,255,0.2)}
+
+    /* SELECT */
+    .selector{display:flex;gap:15px}
+    .sel-btn{padding:10px 18px;border-radius:14px;background:#081f4a;border:1px solid #0a3d73;color:#c8d8ff;font-weight:600;cursor:pointer}
+    .sel-btn.active,.sel-btn:hover{background:#00aaff;color:#000;box-shadow:0 0 18px #00c8ff}
+
+    /* FORM */
+    .field label{font-weight:600;margin-bottom:6px;display:block}
+    input,select{width:100%;padding:12px;border-radius:12px;background:#07172f;border:1px solid #0d3569;color:#d8e2ff}
+    input:focus,select:focus{outline:none;border-color:#00aaff;box-shadow:0 0 12px #00c8ff}
+
+    .actions{display:flex;gap:12px;margin-top:12px}
+    .btn-primary{padding:12px 18px;border:none;border-radius:12px;background:#00aaff;color:#000;font-weight:700;cursor:pointer}
+    .btn-ghost{padding:12px 18px;border-radius:12px;border:1px solid #0d3569;background:#061a3a;color:#aac7ff;cursor:pointer}
+
+    .result-box{margin-top:16px;padding:16px;border-radius:12px;font-weight:700}
+    .ok{background:rgba(0,255,140,0.18);color:#21ff8f;border:1px solid #21ff8f}
+    .warn{background:rgba(255,160,0,0.18);color:#ffae47;border:1px solid #ffae47}
+
+    /* ABOUT */
+    #about,#contact{margin-top:40px;padding:25px;background:#061a3a;border-radius:18px;box-shadow:0 0 25px rgba(0,180,255,0.15)}
+    footer{text-align:center;padding:25px;background:#040f2e;color:#7ea8e6;margin-top:40px}
   </style>
 </head>
 <body>
-<div class="wrapper">
-  <div class="card">
-    <header>
-      <div><div class="logo">HP</div></div>
-      <div><h1>Health Prediction Portal</h1><p class="lead">Doctor-grade realistic ranges • Smart visualization</p></div>
-    </header>
 
-    <div class="layout">
-      <div class="panel">
-        <h3>Select Disease Type</h3>
-        <div class="controls">
-          <button id="btn-diabetes" class="btn" onclick="select('diabetes')">Diabetes</button>
-          <button id="btn-heart" class="btn" onclick="select('heart')">Heart Disease</button>
+  <nav>
+    <div class="logo">HealthAI Portal</div>
+    <ul>
+      <li><a href="#home">Home</a></li>
+      <li><a href="#form">Predict</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <section class="hero" id="home">
+    <h1>AI Powered Health Prediction</h1>
+    <p>Futuristic ML driven health scanner — Diabetes & Heart prediction.</p>
+  </section>
+
+  <main class="main">
+
+    <div class="card" id="form">
+      <h3>Prediction Panel</h3>
+      <div class="selector">
+        <button id="btnDiab" class="sel-btn active" onclick="selectMode('diabetes')">Diabetes</button>
+        <button id="btnHeart" class="sel-btn" onclick="selectMode('heart')">Heart</button>
+      </div>
+
+      <!-- Diabetes Form -->
+      <div id="formDiab">
+        <div class="field"><label>Pregnancies</label><input id="d_preg" type="number" min="0" max="17" step="1" placeholder="0–17"></div>
+        <div class="field"><label>Glucose (mg/dL)</label><input id="d_glu" type="number" min="70" max="180" placeholder="70–180"></div>
+        <div class="field"><label>Blood Pressure</label><input id="d_bp" type="number" min="60" max="140" placeholder="60–140"></div>
+        <div class="field"><label>Skin Thickness</label><input id="d_skin" type="number" min="7" max="50" placeholder="7–50"></div>
+        <div class="field"><label>Insulin</label><input id="d_ins" type="number" min="15" max="276" placeholder="15–276"></div>
+        <div class="field"><label>BMI</label><input id="d_bmi" type="number" step="0.1" min="15" max="50" placeholder="15–50"></div>
+        <div class="field"><label>DPF</label><input id="d_dpf" type="number" step="0.01" min="0.05" max="2.5" placeholder="0.05–2.5"></div>
+        <div class="field"><label>Age</label><input id="d_age" type="number" min="18" max="90" placeholder="18–90"></div>
+      </div>
+
+      <!-- Heart Form -->
+      <div id="formHeart" style="display:none;">
+        <div class="field"><label>Age</label><input id="h_age" type="number" min="20" max="90" placeholder="20–90"></div>
+        <div class="field"><label>Resting BP</label><input id="h_rbp" type="number" min="80" max="200" placeholder="80–200"></div>
+        <div class="field"><label>Cholesterol</label><input id="h_chol" type="number" min="100" max="400" placeholder="100–400"></div>
+        <div class="field"><label>Max HR</label><input id="h_hr" type="number" min="60" max="210" placeholder="60–210"></div>
+        <div class="field"><label>Oldpeak</label><input id="h_old" type="number" step="0.1" min="0" max="6" placeholder="0–6"></div>
+        <div class="field"><label>Sex</label><select id="h_sex"><option value="" disabled selected>Select Sex</option><option value="0">Female</option><option value="1">Male</option></select></div>
+        <div class="field"><label>Chest Pain Type</label>
+          <select id="h_cp"><option value="" disabled selected>Select Chest Pain Type</option><option value="0">Typical Angina (TA)</option><option value="1">Atypical Angina (ATA)</option><option value="2">Non‑Anginal Pain (NAP)</option><option value="3">Asymptomatic (ASY)</option></select>
         </div>
-        <div id="inputsContainer"><p style="color:var(--muted);">Choose a dataset to begin.</p></div>
-        <div class="submitRow">
-          <button class="primary" onclick="predict()">Predict</button>
-          <button class="btn" onclick="fillExample()">Example</button>
-          <button class="btn" onclick="clearInputs()">Clear</button>
+        <div class="field"><label>Fasting BS</label><select id="h_bs"><option value="" disabled selected>Select Fasting BS</option><option value="0">0</option><option value="1">1</option></select></div>
+        <div class="field"><label>Exercise Angina</label><select id="h_ang"><option value="" disabled selected>Exercise Angina?</option><option value="0">No</option><option value="1">Yes</option></select></div>
+        <div class="field"><label>ST Slope</label>
+          <select id="h_st"><option value="" disabled selected>Select ST Slope</option><option value="0">Upsloping</option><option value="1">Flat</option><option value="2">Downsloping</option></select>
         </div>
       </div>
 
-      <div class="visual">
-        <h4>Risk Visualization</h4>
-        <div class="chartWrap"><canvas id="doughnut"></canvas></div>
-        <div id="probText" style="font-weight:700;">Risk Probability: —</div>
-        <div id="statusBox"></div>
+      <div class="actions">
+        <button class="btn-primary">Predict</button>
+        <button class="btn-ghost" onclick="clearAll()">Clear</button>
       </div>
+
+      <div id="result" style="display:none"></div>
     </div>
 
-    <footer>Realistic input limits used per WHO & clinical guidelines.</footer>
-  </div>
-</div>
+    <section id="about" class="card">
+      <h3>About</h3>
+      <p>This portal uses trained Machine Learning models to predict disease risk based on medical parameters.</p>
+    </section>
+
+    <section id="contact" class="card">
+      <h3>Contact</h3>
+      <p>Email: support@healthai.com</p>
+    </section>
+
+  </main>
+
+  <footer>
+    © 2025 HealthAI Portal | Made for Project Learning
+  </footer>
+
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HealthAI Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;font-family:'Poppins',sans-serif;background:#020b1f;color:#d8e2ff}
+
+    /* NAVBAR */
+    nav{width:100%;padding:18px 40px;display:flex;justify-content:space-between;align-items:center;background:#040f2e;position:sticky;top:0;z-index:999;box-shadow:0 0 25px rgba(0,180,255,0.35)}
+    .logo{color:#47c3ff;font-size:22px;font-weight:700;text-shadow:0 0 8px #00c8ff}
+    nav ul{display:flex;list-style:none;gap:30px;margin:0;padding:0}
+    nav a{color:#d8e2ff;text-decoration:none;font-weight:600}
+    nav a:hover{color:#47c3ff;text-shadow:0 0 6px #00c8ff}
+
+    /* HERO */
+    .hero{padding:80px 40px;text-align:center;background:radial-gradient(circle at top,#061a3a,#020b1f)}
+    .hero h1{color:#47c3ff;font-size:40px;text-shadow:0 0 12px #00c8ff;margin:0}
+    .hero p{color:#9db4d9;font-size:18px;max-width:700px;margin:10px auto}
+
+    /* MAIN CONTENT */
+    .main{width:90%;max-width:1100px;margin:40px auto}
+    .card{background:#061a3a;padding:25px;border-radius:20px;box-shadow:0 0 25px rgba(0,180,255,0.18);border:1px solid rgba(0,180,255,0.2)}
+
+    /* SELECT */
+    .selector{display:flex;gap:15px}
+    .sel-btn{padding:10px 18px;border-radius:14px;background:#081f4a;border:1px solid #0a3d73;color:#c8d8ff;font-weight:600;cursor:pointer}
+    .sel-btn.active,.sel-btn:hover{background:#00aaff;color:#000;box-shadow:0 0 18px #00c8ff}
+
+    /* FORM */
+    .field label{font-weight:600;margin-bottom:6px;display:block}
+    input,select{width:100%;padding:12px;border-radius:12px;background:#07172f;border:1px solid #0d3569;color:#d8e2ff}
+    input:focus,select:focus{outline:none;border-color:#00aaff;box-shadow:0 0 12px #00c8ff}
+
+    .actions{display:flex;gap:12px;margin-top:12px}
+    .btn-primary{padding:12px 18px;border:none;border-radius:12px;background:#00aaff;color:#000;font-weight:700;cursor:pointer}
+    .btn-ghost{padding:12px 18px;border-radius:12px;border:1px solid #0d3569;background:#061a3a;color:#aac7ff;cursor:pointer}
+
+    .result-box{margin-top:16px;padding:16px;border-radius:12px;font-weight:700}
+    .ok{background:rgba(0,255,140,0.18);color:#21ff8f;border:1px solid #21ff8f}
+    .warn{background:rgba(255,160,0,0.18);color:#ffae47;border:1px solid #ffae47}
+
+    /* ABOUT */
+    #about,#contact{margin-top:40px;padding:25px;background:#061a3a;border-radius:18px;box-shadow:0 0 25px rgba(0,180,255,0.15)}
+    footer{text-align:center;padding:25px;background:#040f2e;color:#7ea8e6;margin-top:40px}
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="logo">HealthAI Portal</div>
+    <ul>
+      <li><a href="#home">Home</a></li>
+      <li><a href="#form">Predict</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <section class="hero" id="home">
+    <h1>AI Powered Health Prediction</h1>
+    <p>Futuristic ML driven health scanner — Diabetes & Heart prediction.</p>
+  </section>
+
+  <main class="main">
+
+    <div class="card" id="form">
+      <h3>Prediction Panel</h3>
+      <div class="selector">
+        <button id="btnDiab" class="sel-btn active" onclick="selectMode('diabetes')">Diabetes</button>
+        <button id="btnHeart" class="sel-btn" onclick="selectMode('heart')">Heart</button>
+      </div>
+
+      <!-- Diabetes Form -->
+      <div id="formDiab">
+        <div class="field"><label>Pregnancies</label><input id="d_preg" type="number" min="0" max="17" step="1" placeholder="0–17"></div>
+        <div class="field"><label>Glucose (mg/dL)</label><input id="d_glu" type="number" min="70" max="180" placeholder="70–180"></div>
+        <div class="field"><label>Blood Pressure</label><input id="d_bp" type="number" min="60" max="140" placeholder="60–140"></div>
+        <div class="field"><label>Skin Thickness</label><input id="d_skin" type="number" min="7" max="50" placeholder="7–50"></div>
+        <div class="field"><label>Insulin</label><input id="d_ins" type="number" min="15" max="276" placeholder="15–276"></div>
+        <div class="field"><label>BMI</label><input id="d_bmi" type="number" step="0.1" min="15" max="50" placeholder="15–50"></div>
+        <div class="field"><label>DPF</label><input id="d_dpf" type="number" step="0.01" min="0.05" max="2.5" placeholder="0.05–2.5"></div>
+        <div class="field"><label>Age</label><input id="d_age" type="number" min="18" max="90" placeholder="18–90"></div>
+      </div>
+
+      <!-- Heart Form -->
+      <div id="formHeart" style="display:none;">
+        <div class="field"><label>Age</label><input id="h_age" type="number" min="20" max="90" placeholder="20–90"></div>
+        <div class="field"><label>Resting BP</label><input id="h_rbp" type="number" min="80" max="200" placeholder="80–200"></div>
+        <div class="field"><label>Cholesterol</label><input id="h_chol" type="number" min="100" max="400" placeholder="100–400"></div>
+        <div class="field"><label>Max HR</label><input id="h_hr" type="number" min="60" max="210" placeholder="60–210"></div>
+        <div class="field"><label>Oldpeak</label><input id="h_old" type="number" step="0.1" min="0" max="6" placeholder="0–6"></div>
+        <div class="field"><label>Sex</label><select id="h_sex"><option value="" disabled selected>Select Sex</option><option value="0">Female</option><option value="1">Male</option></select></div>
+        <div class="field"><label>Chest Pain Type</label>
+          <select id="h_cp"><option value="" disabled selected>Select Chest Pain Type</option><option value="0">Typical Angina (TA)</option><option value="1">Atypical Angina (ATA)</option><option value="2">Non‑Anginal Pain (NAP)</option><option value="3">Asymptomatic (ASY)</option></select>
+        </div>
+        <div class="field"><label>Fasting BS</label><select id="h_bs"><option value="" disabled selected>Select Fasting BS</option><option value="0">0</option><option value="1">1</option></select></div>
+        <div class="field"><label>Exercise Angina</label><select id="h_ang"><option value="" disabled selected>Exercise Angina?</option><option value="0">No</option><option value="1">Yes</option></select></div>
+        <div class="field"><label>ST Slope</label>
+          <select id="h_st"><option value="" disabled selected>Select ST Slope</option><option value="0">Upsloping</option><option value="1">Flat</option><option value="2">Downsloping</option></select>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn-primary">Predict</button>
+        <button class="btn-ghost" onclick="clearAll()">Clear</button>
+      </div>
+
+      <div id="result" style="display:none"></div>
+    </div>
+
+    <section id="about" class="card">
+      <h3>About</h3>
+      <p>This portal uses trained Machine Learning models to predict disease risk based on medical parameters.</p>
+    </section>
+
+    <section id="contact" class="card">
+      <h3>Contact</h3>
+      <p>Email: support@healthai.com</p>
+    </section>
+
+  </main>
+
+  <footer>
+    © 2025 HealthAI Portal | Made for Project Learning
+  </footer>
 
 <script>
-const presets={
-  diabetes:{
-    placeholders:[
-      {key:"Pregnancies",min:0,max:17,step:1,sample:2,hint:"Number of times pregnant"},
-      {key:"Glucose (mg/dL)",min:70,max:180,step:1,sample:120,hint:"Normal fasting 70–99"},
-      {key:"BloodPressure (mm Hg)",min:60,max:140,step:1,sample:80,hint:"Normal 80–120"},
-      {key:"SkinThickness (mm)",min:7,max:50,step:1,sample:25,hint:"Typical 10–40"},
-      {key:"Insulin (µU/mL)",min:15,max:276,step:1,sample:80,hint:"Normal 15–276"},
-      {key:"BMI (kg/m²)",min:15,max:50,step:0.1,sample:28,hint:"Healthy 18.5–24.9"},
-      {key:"DiabetesPedigreeFunction",min:0.05,max:2.5,step:0.01,sample:0.5,hint:"Higher = genetic risk"},
-      {key:"Age (years)",min:18,max:90,step:1,sample:45,hint:"Adult range 18–90"}
-    ]
-  },
-  heart:{
-    placeholders:[
-      {key:"Age (years)",min:20,max:90,step:1,sample:54,hint:"Adult range"},
-      {key:"RestingBP (mm Hg)",min:80,max:200,step:1,sample:130,hint:"Normal ~120"},
-      {key:"Cholesterol (mg/dL)",min:100,max:400,step:1,sample:240,hint:"Desirable <200"},
-      {key:"MaxHR (bpm)",min:60,max:210,step:1,sample:160,hint:"Max heart rate"},
-      {key:"Oldpeak (mm)",min:0,max:6,step:0.1,sample:1.2,hint:"ST depression"},
-      {key:"Sex (0=F,1=M)",min:0,max:1,step:1,sample:1,hint:"0 Female, 1 Male"},
-      {key:"ChestPainType (0–3)",min:0,max:3,step:1,sample:1,hint:"Encoded chest pain"},
-      {key:"FastingBS (0/1)",min:0,max:1,step:1,sample:0,hint:">120 mg/dL=1"},
-      {key:"ExerciseAngina (0/1)",min:0,max:1,step:1,sample:0,hint:"0 No, 1 Yes"},
-      {key:"ST_Slope (0–2)",min:0,max:2,step:1,sample:1,hint:"Slope type"}
-    ]
-  }
-};
-
-let selected=null,chart=null;
-
-function select(name){
-  selected=name;
-  document.getElementById("btn-diabetes").classList.toggle("active",name==="diabetes");
-  document.getElementById("btn-heart").classList.toggle("active",name==="heart");
-  const cont=document.getElementById("inputsContainer");
-  cont.innerHTML="";
-  const grid=document.createElement("div");
-  grid.className="inputs";
-  presets[name].placeholders.forEach((p,i)=>{
-    const fld=document.createElement("div");
-    fld.className="field";
-    fld.innerHTML=`<label for="f${i}">${p.key}</label>
-      <input id="f${i}" type="number" min="${p.min}" max="${p.max}" step="${p.step}" placeholder="${p.sample}">
-      <div class="hint">${p.hint} • Range ${p.min}–${p.max}</div>`;
-    grid.appendChild(fld);
-  });
-  cont.appendChild(grid);
-}
-
-function fillExample(){
-  if(!selected)return alert("Select a dataset first.");
-  presets[selected].placeholders.forEach((p,i)=>document.getElementById("f"+i).value=p.sample);
-}
-function clearInputs(){
-  if(!selected)return;
-  presets[selected].placeholders.forEach((p,i)=>document.getElementById("f"+i).value="");
-  updateChart(0);document.getElementById("probText").textContent="Risk Probability: —";
-  document.getElementById("statusBox").innerHTML="";
-}
-
-function readInputs(){
-  if(!selected)return null;
-  const arr=[];
-  for(let i=0;i<presets[selected].placeholders.length;i++){
-    const el=document.getElementById("f"+i);
-    if(!el.value)return null;
-    arr.push(parseFloat(el.value));
-  }
-  return arr;
-}
-
-async function predict(){
-  const features=readInputs();
-  if(!features)return alert("Fill all inputs first.");
-  const res=await fetch("/predict",{method:"POST",headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({disease:selected,features})});
-  const j=await res.json();
-  const prob=j.probability||0;const label=j.label||0;const status=j.status||"";
-  document.getElementById("probText").textContent=`Risk Probability: ${(prob*100).toFixed(1)}%`;
-  document.getElementById("statusBox").innerHTML=`<span class="statusBadge ${label==0?'statusHealthy':'statusRisk'}">${status}</span>`;
-  updateChart(prob);
-}
-
-function updateChart(prob){
-  const data=[1-prob,prob];
-  if(chart){chart.data.datasets[0].data=data;chart.update();}
-  else{
-    chart=new Chart(document.getElementById("doughnut"),{
-      type:"doughnut",
-      data:{labels:["Healthy","At Risk"],datasets:[{data:data,backgroundColor:["#2ecc71","#e67e22"]}]},
-      options:{plugins:{legend:{position:"bottom"}}}
-    });
-  }
-}
-updateChart(0);
+function selectMode(m){
+ document.getElementById('btnDiab').classList.remove('active');
+ document.getElementById('btnHeart').classList.remove('active');
+ if(m==='diabetes'){document.getElementById('btnDiab').classList.add('active');
+  document.getElementById('formDiab').style.display='block';
+  document.getElementById('formHeart').style.display='none';}
+ else{document.getElementById('btnHeart').classList.add('active');
+  document.getElementById('formDiab').style.display='none';
+  document.getElementById('formHeart').style.display='block';}}
+function clearAll(){document.querySelectorAll('input').forEach(i=>i.value='');document.querySelectorAll('select').forEach(s=>s.selectedIndex=0);document.getElementById('result').style.display='none';}
 </script>
 </body>
 </html>
